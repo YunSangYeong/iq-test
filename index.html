@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>20문항 간이 IQ 테스트</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+    body { background-color: #f4f6f8; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+    h1 { font-size: 22px; color: #333; margin-bottom: 20px; }
+    .progress-bar { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
+    .progress { background: #007bff; height: 100%; width: 0%; transition: width 0.3s; }
+    .question-box { font-size: 18px; font-weight: bold; color: #222; margin-bottom: 25px; line-height: 1.5; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+    .options { display: flex; flex-direction: column; gap: 10px; }
+    button.opt-btn { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #007bff; background: white; color: #007bff; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    button.opt-btn:hover { background: #007bff; color: white; }
+    #result-screen { display: none; }
+    .score-title { font-size: 18px; color: #666; }
+    .iq-score { font-size: 48px; font-weight: bold; color: #007bff; margin: 15px 0; }
+    .iq-desc { font-size: 16px; color: #444; line-height: 1.6; }
+    .restart-btn { margin-top: 25px; padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div class="card" id="quiz-screen">
+    <h1 id="quiz-title">간이 IQ 테스트 (20문항)</h1>
+    <div class="progress-bar"><div class="progress" id="progress"></div></div>
+    <div class="question-box" id="question">문제를 불러오는 중...</div>
+    <div class="options" id="options"></div>
+  </div>
+
+  <div class="card" id="result-screen">
+    <h1>테스트 결과</h1>
+    <div class="score-title">당신의 추정 IQ</div>
+    <div class="iq-score" id="iq-result">100</div>
+    <div class="iq-desc" id="iq-desc">결과 분석 중...</div>
+    <button class="restart-btn" onclick="location.reload()">다시 테스트하기</button>
+  </div>
+
+  <script>
+    const questions = [
+      { q: "1. [2, 4, 8, 16, ?] 빈칸에 들어갈 숫자는?", opts: ["24", "32", "30", "64"], a: 1 },
+      { q: "2. [3, 6, 9, 12, ?] 빈칸에 들어갈 숫자는?", opts: ["15", "18", "14", "21"], a: 0 },
+      { q: "3. '사과'와 '과일'의 관계는 '장미'와 무엇의 관계인가?", opts: ["식물", "꽃", "가시", "향기"], a: 1 },
+      { q: "4. [1, 1, 2, 3, 5, 8, ?] 빈칸에 들어갈 숫자는?", opts: ["11", "13", "12", "15"], a: 1 },
+      { q: "5. 다음 중 성격이 다른 하나는?", opts: ["구형", "직사각형", "삼각형", "원형"], a: 0 },
+      { q: "6. [100, 95, 85, 70, ?] 빈칸에 들어갈 숫자는?", opts: ["50", "55", "60", "45"], a: 0 },
+      { q: "7. '시계'가 '시간'을 나타낸다면, '온도계'는?", opts: ["날씨", "열", "온도", "수온"], a: 2 },
+      { q: "8. [3, 9, 27, 81, ?] 빈칸에 들어갈 숫자는?", opts: ["243", "162", "108", "300"], a: 0 },
+      { q: "9. 손수건 4장을 말리는 데 1시간이 걸린다면, 8장을 말리는 데는 몇 시간이 걸릴까?", opts: ["2시간", "1시간", "4시간", "30분"], a: 1 },
+      { q: "10. [A, C, E, G, ?] 다음 알파벳은?", opts: ["H", "I", "J", "K"], a: 1 },
+      { q: "11. [1, 4, 9, 16, 25, ?] 빈칸에 들어갈 숫자는?", opts: ["30", "36", "49", "32"], a: 1 },
+      { q: "12. 다음 중 나머지 셋과 다른 단어는?", opts: ["사자", "호랑이", "표범", "소"], a: 3 },
+      { q: "13. [80, 40, 20, 10, ?] 빈칸에 들어갈 숫자는?", opts: ["5", "0", "8", "2"], a: 0 },
+      { q: "14. '북'이 '남'이라면, '동'은?", opts: ["서", "남", "북", "중앙"], a: 0 },
+      { q: "15. [2, 3, 5, 7, 11, ?] 빈칸에 들어갈 숫자는?", opts: ["13", "15", "12", "14"], a: 0 },
+      { q: "16. 3명의 사람이 3일 동안 3개의 의자를 만든다면, 6명의 사람이 6개의 의자를 만드는 데 걸리는 일수는?", opts: ["6일", "3일", "12일", "1.5일"], a: 1 },
+      { q: "17. [1, 8, 27, 64, ?] 빈칸에 들어갈 숫자는?", opts: ["125", "100", "81", "216"], a: 0 },
+      { q: "18. '책'과 '페이지'의 관계는 '집'과 무엇의 관계인가?", opts: ["지붕", "방", "가구", "건물"], a: 1 },
+      { q: "19. [2, 5, 11, 23, ?] 빈칸에 들어갈 숫자는?", opts: ["47", "46", "35", "50"], a: 0 },
+      { q: "20. 다음 중 가장 큰 수는?", opts: ["2의 5승", "3의 3승", "5의 2승", "4의 2승"], a: 0 }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+
+    function renderQuestion() {
+      const qData = questions[currentIdx];
+      document.getElementById("quiz-title").innerText = `간이 IQ 테스트 (${currentIdx + 1}/20)`;
+      document.getElementById("question").innerText = qData.q;
+      
+      const optionsContainer = document.getElementById("options");
+      optionsContainer.innerHTML = "";
+      
+      qData.opts.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "opt-btn";
+        btn.innerText = opt;
+        btn.onclick = () => selectOption(idx);
+        optionsContainer.appendChild(btn);
+      });
+
+      const progressPercent = ((currentIdx) / questions.length) * 100;
+      document.getElementById("progress").style.width = `${progressPercent}%`;
+    }
+
+    function selectOption(selectedIdx) {
+      if (selectedIdx === questions[currentIdx].a) {
+        score++;
+      }
+      currentIdx++;
+
+      if (currentIdx < questions.length) {
+        renderQuestion();
+      } else {
+        showResult();
+      }
+    }
+
+    function showResult() {
+      document.getElementById("quiz-screen").style.display = "none";
+      document.getElementById("result-screen").style.display = "block";
+
+      const calculatedIQ = Math.round(80 + (score * 3.5));
+      document.getElementById("iq-result").innerText = calculatedIQ;
+
+      let desc = "";
+      if (calculatedIQ >= 130) {
+        desc = "상위 2% 이내의 뛰어난 수리·논리적 사고력을 보유하고 계십니다!";
+      } else if (calculatedIQ >= 115) {
+        desc = "평균보다 명확히 높은 수리 분석력과 문제 해결 능력을 보여줍니다.";
+      } else if (calculatedIQ >= 95) {
+        desc = "대중적인 평균 수준의 논리적 추론 능력을 가지고 계십니다.";
+      } else {
+        desc = "기본적인 패턴 인식 및 직관적 사고력을 갖추고 계십니다.";
+      }
+      document.getElementById("iq-desc").innerText = desc;
+    }
+
+    renderQuestion();
+  </script>
+
+</body>
+</html>
