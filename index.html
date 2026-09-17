@@ -8,7 +8,8 @@
     * { box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
     body { background-color: #f4f6f8; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
     .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
-    h1 { font-size: 22px; color: #333; margin-bottom: 20px; }
+    h1 { font-size: 22px; color: #333; margin-bottom: 15px; }
+    .timer-box { font-size: 18px; font-weight: bold; color: #dc3545; margin-bottom: 15px; background: #ffeef0; padding: 8px; border-radius: 6px; }
     .progress-bar { width: 100%; background: #eee; height: 10px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; }
     .progress { background: #007bff; height: 100%; width: 0%; transition: width 0.3s; }
     .question-box { font-size: 18px; font-weight: bold; color: #222; margin-bottom: 25px; line-height: 1.5; min-height: 60px; display: flex; align-items: center; justify-content: center; }
@@ -26,6 +27,7 @@
 
   <div class="card" id="quiz-screen">
     <h1 id="quiz-title">간이 IQ 테스트 (20문항)</h1>
+    <div class="timer-box">남은 시간: <span id="timer">10:00</span></div>
     <div class="progress-bar"><div class="progress" id="progress"></div></div>
     <div class="question-box" id="question">문제를 불러오는 중...</div>
     <div class="options" id="options"></div>
@@ -65,6 +67,25 @@
 
     let currentIdx = 0;
     let score = 0;
+    let timeLeft = 600; // 10분 (초 단위)
+    let timerInterval = null;
+
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        timeLeft--;
+        
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById("timer").innerText = 
+          `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          alert("제한시간이 종료되었습니다! 현재까지 푼 문제로 결과를 계산합니다.");
+          showResult();
+        }
+      }, 1000);
+    }
 
     function renderQuestion() {
       const qData = questions[currentIdx];
@@ -100,6 +121,8 @@
     }
 
     function showResult() {
+      clearInterval(timerInterval); // 테스트 완료 시 타이머 멈춤
+      
       document.getElementById("quiz-screen").style.display = "none";
       document.getElementById("result-screen").style.display = "block";
 
@@ -119,7 +142,9 @@
       document.getElementById("iq-desc").innerText = desc;
     }
 
+    // 초기 구동
     renderQuestion();
+    startTimer();
   </script>
 
 </body>
